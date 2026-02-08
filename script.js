@@ -62,17 +62,11 @@ function renderContent(item) {
         element.src = `https://drive.google.com/thumbnail?id=${item.id}&sz=w2048`;
         element.alt = item.name;
     }
-    else if (mime.startsWith('video/')) {
-        element = document.createElement('video');
-        element.controls = true;
-        element.autoplay = true;
-        element.src = `https://drive.google.com/uc?export=download&id=${item.id}`;
-    }
-    else if (mime.startsWith('audio/')) {
-        element = document.createElement('audio');
-        element.controls = true;
-        element.autoplay = true;
-        element.src = `https://drive.google.com/uc?export=download&id=${item.id}`;
+    else if (mime.startsWith('video/') || mime.startsWith('audio/')) {
+        // Use Google Drive Preview Iframe for reliable playback
+        element = document.createElement('iframe');
+        element.src = `https://drive.google.com/file/d/${item.id}/preview`;
+        element.allow = "autoplay; fullscreen";
     }
     else {
         // Fallback for PDF, Text, Docs, etc. -> Iframe Preview
