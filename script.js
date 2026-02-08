@@ -5,6 +5,7 @@ const randomBtn = document.getElementById('random-btn');
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWyN2-YZqwIpffvi4UpXca6Bru3ZJa0ZcwenmhCYfz3nfA0FkazzBVZiP50BE2Avsv/exec';
 
 let files = [];
+let playedHistory = [];
 
 // Fetch the file list when the page loads
 async function fetchFiles() {
@@ -42,11 +43,32 @@ randomBtn.addEventListener('click', () => {
         return;
     }
 
-    // Randomly select content
-    const randomIndex = Math.floor(Math.random() * files.length);
-    const item = files[randomIndex];
+    // Calculate max history size (50% of total files)
+    const maxHistorySize = Math.max(1, Math.floor(files.length / 2));
 
-    console.log("Playing:", item.name, item.mimeType);
+    // Filter out files that are currently in the history
+    const availableFiles = files.filter(file => !playedHistory.includes(file.id));
+
+    // Fallback: This should theoretically not happen if logic is correct, 
+    // but if available is empty, reset history to avoid crash
+    let pool = availableFiles.length > 0 ? availableFiles : files;
+    if (availableFiles.length === 0) {
+        playedHistory = [];
+        pool = files;
+    }
+
+    // Randomly select content from the available pool
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    const item = pool[randomIndex];
+
+    // Add to history
+    playedHistory.push(item.id);
+    // Keep history within size limit
+    if (playedHistory.length > maxHistorySize) {
+        playedHistory.shift(); // Remove oldest
+    }
+
+    console.log(`Playing: ${item.name} | History: ${playedHistory.length}/${maxHistorySize}`);
     renderContent(item);
 });
 
